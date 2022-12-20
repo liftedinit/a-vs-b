@@ -8,11 +8,15 @@ NODES_34 := $(addsuffix .done,$(addprefix genfiles/node34_,$(shell seq 1 ${NB_NO
 NODES_35 := $(addsuffix .done,$(addprefix genfiles/node35_,$(shell seq ${35_MIN} ${35_MAX})))
 DOCKER := docker run --user $$(id -u) --rm
 TM_34 := tendermint/tendermint:v0.34.24
-TM_35 := tendermint/tendermint:v0.35.4
+TM_35 := tendermint/tendermint:v0.35.8
 OUTPUT_DIR = ${PWD}/genfiles
 TM_34_ROOT := ${OUTPUT_DIR}/node34
 TM_35_ROOT := ${OUTPUT_DIR}/node35
 VALIDATOR_COMMAND = jq '{ address: .address, pub_key: .pub_key }' "${ROOT}_$*/tendermint/config/priv_validator_key.json" | jq ".name = \"tendermint-$*\" | .power = \"1000\"" > $@
+
+STATESYNC ?=
+STATESYNC_TRUSTED_HEIGHT ?=
+STATESYNC_TRUSTED_HASH ?=
 
 SHELL := bash
 
@@ -93,6 +97,36 @@ $(NODES_34): genfiles/node34_%.done: genfiles/node.validators genfiles/node_%.co
 	$(TM_GENESIS)
 	touch $@
 
+.PHONY: enable_statesync_34
+enable_statesync_34: $(NODES_34:%done=%statesync)
+
+.PHONY: enable_statesync_35
+enable_statesync_35: $(NODES_35:%done=%statesync)
+
+genfiles/node34_%.statesync: ROOT := ${TM_34_ROOT}
+genfiles/node34_%.statesync: TM := ${TM_34}
+genfiles/node34_%.statesync: NODE_TYPE := node34
+genfiles/node34_%.statesync: UPDATE_CMD = ${PWD}/update_toml_key.sh ${ROOT}_$*/tendermint/config/config.toml
+genfiles/node34_%.statesync:
+	$(UPDATE_CMD) statesync enable "true"
+	$(UPDATE_CMD) statesync trust_period "\"10s\""
+	$(UPDATE_CMD) statesync rpc_servers "\"http:\/\/tendermint-3:26657,http:\/\/tendermint-4:26657\""
+	$(UPDATE_CMD) statesync trust_height "${STATESYNC_TRUSTED_HEIGHT}"
+	$(UPDATE_CMD) statesync trust_hash "\"${STATESYNC_TRUSTED_HASH}\""
+	touch $@
+
+genfiles/node35_%.statesync: ROOT := ${TM_35_ROOT}
+genfiles/node35_%.statesync: TM := ${TM_35}
+genfiles/node35_%.statesync: NODE_TYPE := node35
+genfiles/node35_%.statesync: UPDATE_CMD = ${PWD}/update_toml_key.sh ${ROOT}_$*/tendermint/config/config.toml
+genfiles/node35_%.statesync:
+	$(UPDATE_CMD) statesync enable "true"
+	$(UPDATE_CMD) statesync trust-period "\"10s\""
+	$(UPDATE_CMD) statesync rpc-servers "\"tendermint-3:26657,tendermint-4:26657\""
+	$(UPDATE_CMD) statesync trust-height "${STATESYNC_TRUSTED_HEIGHT}"
+	$(UPDATE_CMD) statesync trust-hash "\"${STATESYNC_TRUSTED_HASH}\""
+	touch $@
+
 # Concatenate all node IDs but self
 # The value from this target will be used to set the `p2p persistent peers` configuration file entry
 genfiles/node_%.config: $(NODES_34:%done=%nodeid) $(NODES_35:%done=%nodeid)
@@ -108,7 +142,7 @@ genfiles/node35_%.validator: ROOT := ${TM_35_ROOT}
 genfiles/node35_%.validator: genfiles/node35_%.init
 	$(VALIDATOR_COMMAND)
 
-# Initialize TM 35 node configuration, persitent storage and keys
+# Initialize TM 35 node configuration, persistent storage and keys
 genfiles/node35_%.init: ROOT := ${TM_35_ROOT}
 genfiles/node35_%.init: TM := ${TM_35}
 genfiles/node35_%.init:
@@ -168,3 +202,9 @@ start-single-node-background: genfiles/build34 genfiles/build35 genfiles/docker_
 	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger up --detach tendermint-$(NODE)
 	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger up --detach abci-$(NODE)
 	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger up --detach ledger-$(NODE)
+
+.PHONY: start-single-node
+start-single-node: genfiles/build34 genfiles/build35 genfiles/docker_compose.json
+	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger up tendermint-$(NODE)
+	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger up abci-$(NODE)
+	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger up ledger-$(NODE)

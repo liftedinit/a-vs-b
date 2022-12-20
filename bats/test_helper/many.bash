@@ -47,23 +47,18 @@ function cred_id() {
 
 function many_message() {
     local pem_arg
-    local error
+    local port
 
     while (( $# > 0 )); do
       case "$1" in
         --id=*) pem_arg="--pem=$(pem ${1#--id=})"; shift ;;
-        -e|--error) error=1; shift ;;
+        --port=*) port="${1#--port=}"; shift ;;
         --) shift; break ;;
         *) break ;;
       esac
     done
 
-    run command many message --server http://localhost:8000 "$pem_arg" "$@"
-    if [ "$error" ]; then
-      [ "$status" -ne 0 ]
-    else
-      [ "$status" -eq 0 ]
-    fi
+    command many message --server http://localhost:${port} "$pem_arg" "$@"
 }
 
 function identity() {

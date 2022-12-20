@@ -107,7 +107,8 @@ local tendermint_35(i, user, tendermint_tag) = {
     volumes: [
         "./node35_" + i + "/tendermint/:/tendermint"
     ],
-    ports: [ "" + (26600 + i) + ":26600" ],
+    ports: [ "" + (26600 + i) + ":26600",
+             "" + (26700 + i) + ":26657"],
 };
 
 function(nb_nodes_34=2,
@@ -115,7 +116,7 @@ function(nb_nodes_34=2,
 		 user=1000,
 		 id_with_balances="",
 		 tendermint_34_tag="0.34.24",
-		 tendermint_35_tag="0.35.4",
+		 tendermint_35_tag="0.35.8",
 		 allow_addrs=false,
 		 enable_migrations=false) {
     version: '3',
