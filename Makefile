@@ -14,6 +14,10 @@ TM_34_ROOT := ${OUTPUT_DIR}/node34
 TM_35_ROOT := ${OUTPUT_DIR}/node35
 VALIDATOR_COMMAND = jq '{ address: .address, pub_key: .pub_key }' "${ROOT}_$*/tendermint/config/priv_validator_key.json" | jq ".name = \"tendermint-$*\" | .power = \"1000\"" > $@
 
+NODE ?=
+FROM ?=
+TO ?=
+
 SHELL := bash
 
 # Initialize Tendermint configuration and keys
@@ -47,6 +51,11 @@ define DOCKER_BUILD =
 	touch $@
 endef
 
+define SNAPSHOT =
+	cp -Lr ${ROOT}_$*/persistent-ledger ${ROOT}_$*/ledger_db_snapshot
+	cp -Lr ${ROOT}_$*/tendermint/data ${ROOT}_$*/tendermint_data_snapshot
+endef
+
 .PHONY: clean
 clean:
 	make stop-nodes
@@ -76,6 +85,18 @@ genfiles/node34_%.nodeid: ROOT := ${TM_34_ROOT}
 genfiles/node34_%.nodeid: TM := ${TM_34}
 genfiles/node34_%.nodeid: genfiles/node34_%.init
 	$(TM_NODE_ID)
+
+.PHONY create_snapshot:
+create_snapshot: genfiles/node34_${NODE}/ledger_db_snapshot genfiles/node34_${NODE}/tendermint_data_snapshot
+
+.PHONY copy_snapshot:
+copy_snapshot: genfiles/node34_${FROM}/ledger_db_snapshot genfiles/node34_${FROM}/tendermint_data_snapshot
+	cp -Lr genfiles/node34_${FROM}/ledger_db_snapshot/*  genfiles/node34_${TO}/persistent-ledger
+	cp -Lr genfiles/node34_${FROM}/tendermint_data_snapshot/*  genfiles/node34_${TO}/tendermint/data
+
+genfiles/node34_%/ledger_db_snapshot genfiles/node34_%/tendermint_data_snapshot: ROOT := ${TM_34_ROOT}
+genfiles/node34_%/ledger_db_snapshot genfiles/node34_%/tendermint_data_snapshot:
+	$(SNAPSHOT)
 
 # Generate TM 34 node configuration and genesis files
 $(NODES_34): ROOT := ${TM_34_ROOT}
