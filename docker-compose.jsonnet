@@ -66,31 +66,29 @@ local ledger_B(i, user, ledger_img, enable_migrations) = {
     command: ledger_command(i) + load_migrations(enable_migrations)
 };
 
-local tendermint_A(i, user, tendermint_tag) = {
-    image: tendermint_tag,
-    command: [
-        "start",
-        "--rpc.laddr", "tcp://0.0.0.0:26657",
-        "--proxy_app", "tcp://abci-" + i + ":26658",
-    ],
-    user: "" + user,
-    volumes: [
-        "./nodeA_" + i + "/tendermint/:/tendermint"
-    ],
-    ports: [ "" + (26600 + i) + ":26600" ],
-};
-
-local tendermint_B(i, user, tendermint_tag) = {
-    image: tendermint_tag,
-    command: [
+local generate_tm_command(i, tendermint_tag) =
+	if std.length(std.findSubstr("0.35", tendermint_tag)) > 0 then
+		[
         "--log-level", "info",
         "start",
         "--rpc.laddr", "tcp://0.0.0.0:26657",
         "--proxy-app", "tcp://abci-" + i + ":26658",
-    ],
+        ]
+    else if std.length(std.findSubstr("0.34", tendermint_tag)) > 0 then
+       [
+        "start",
+        "--rpc.laddr", "tcp://0.0.0.0:26657",
+        "--proxy_app", "tcp://abci-" + i + ":26658",
+        ]
+    else
+        std.assertEqual(true, false);
+
+local tendermint(i, type="", user, tendermint_tag) = {
+    image: tendermint_tag,
+    command: generate_tm_command(i, tendermint_tag),
     user: "" + user,
     volumes: [
-        "./nodeB_" + i + "/tendermint/:/tendermint"
+        "./node" + type + "_" + i + "/tendermint/:/tendermint"
     ],
     ports: [ "" + (26600 + i) + ":26600" ],
 };
@@ -108,12 +106,12 @@ function(NB_NODES_A=2,
     } + {
         ["ledger-" + i]: ledger_A(i, user, "many-ledger-a", enable_migrations) for i in std.range(1, NB_NODES_A)
     } + {
-        ["tendermint-" + i]: tendermint_A(i, user, tendermint_A_tag) for i in std.range(1, NB_NODES_A)
+        ["tendermint-" + i]: tendermint(i, "A", user, tendermint_A_tag) for i in std.range(1, NB_NODES_A)
     } + {
         ["abci-" + i]: abci_B(i, user, "many-abci-b", allow_addrs) for i in std.range(NB_NODES_A + 1, NB_NODES_A + NB_NODES_B)
     } + {
         ["ledger-" + i]: ledger_B(i, user, "many-ledger-b", enable_migrations) for i in std.range(NB_NODES_A + 1, NB_NODES_A + NB_NODES_B)
     } + {
-        ["tendermint-" + i]: tendermint_B(i, user, tendermint_B_tag) for i in std.range(NB_NODES_A + 1, NB_NODES_A + NB_NODES_B)
+        ["tendermint-" + i]: tendermint(i, "B", user, tendermint_B_tag) for i in std.range(NB_NODES_A + 1, NB_NODES_A + NB_NODES_B)
     },
 }
