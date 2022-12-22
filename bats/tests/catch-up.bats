@@ -22,7 +22,7 @@ function ledger() {
     local pem="$1"
     local port="$2"
     shift 2
-    run "$GIT_ROOT/tm35-bins/ledger" --pem "$pem" "http://localhost:${port}/" "$@"
+    run "$GIT_ROOT/b-bins/ledger" --pem "$pem" "http://localhost:${port}/" "$@"
 }
 
 function check_consistency() {
@@ -36,10 +36,10 @@ function check_consistency() {
     done
 }
 
-@test "$SUITE: TM34 node can catch up" {
+@test "$SUITE: node A can catch up" {
     for i in {2..4}
     do
-        make NB_NODES_34=2 NB_NODES_35=2 NODE="${i}" start-single-node-background || {
+        make NB_NODES_A=2 NB_NODES_B=2 NODE="${i}" start-single-node-background || {
           echo Could not start nodes... >&3
           exit 1
         }
@@ -81,7 +81,7 @@ EOT
 
     # At this point, start the 4th node and check it can catch up
     cd "$GIT_ROOT" || exit
-    make NB_NODES_34=2 NB_NODES_35=2 NODE="1" start-single-node-background || {
+    make NB_NODES_A=2 NB_NODES_B=2 NODE="1" start-single-node-background || {
       echo Could not start nodes... >&3
       exit 1
     }
@@ -98,10 +98,10 @@ EOT
     check_consistency "$(pem 2)" 10000 8001 8002 8003 8004
 }
 
-@test "$SUITE: TM35 node can catch up" {
+@test "$SUITE: node B can catch up" {
     for i in {1..3}
     do
-        make NB_NODES_34=2 NB_NODES_35=2 NODE="${i}" start-single-node-background || {
+        make NB_NODES_A=2 NB_NODES_B=2 NODE="${i}" start-single-node-background || {
           echo Could not start nodes... >&3
           exit 1
         }
@@ -143,7 +143,7 @@ EOT
 
     # At this point, start the 4th node and check it can catch up
     cd "$GIT_ROOT" || exit
-    make NB_NODES_34=2 NB_NODES_35=2 NODE="4" start-single-node-background || {
+    make NB_NODES_A=2 NB_NODES_B=2 NODE="4" start-single-node-background || {
       echo Could not start nodes... >&3
       exit 1
     }

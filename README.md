@@ -1,6 +1,14 @@
-# Tendermint hybrid network
+# Hybrid network
 
-PoC MANY hybrid network using Tendermint 0.34 and 0.35
+PoC MANY hybrid network
+
+A hybrid network can consist of
+
+- Different Tendermint versions
+- Different `many-framework` versions
+- Both
+
+Tendermint 0.34 and 0.35 configuration files are supported.
 
 ## Requirements
 
@@ -10,16 +18,14 @@ PoC MANY hybrid network using Tendermint 0.34 and 0.35
 - bash
 - GNU make
 - coreutils
-- Tendermint 0.34 compatible `many-framework` binaries
-- Tendermint 0.35 compatible `many-framework` binaries
 - (optional, tests) bats-core >= 1.7 
 
 ## Quick start
 
-Place the Tendermint 0.34 and 0.35 compatible binaries in their respective `tmXX-bins` folder. E.g.
+Place the binaries in their respective `X-bins` folder. E.g.
 
 ```bash
-tmXX-bins
+X-bins
 ├── http_proxy
 ├── idstore-export
 ├── kvstore
@@ -36,16 +42,16 @@ Run
 $ make start-nodes
 ```
 
-to run a hybrid 4 nodes cluster, where 2 nodes runs on TM 0.34 and 2 nodes runs on TM 0.35.
+to run a hybrid 4 nodes cluster, where the default is to run 2 nodes (A) on TM 0.34 and 2 nodes (B) on TM 0.35.
 
 ### Custom number of nodes
 
-The number of nodes running on each TM version can be modified by setting the `NB_NODES_34` and `NB_NODES_35` variables.
+The number of nodes running can be modified by setting the `NB_NODES_A` and `NB_NODES_B` variables.
 
 E.g.
 ```bash
 # Start a cluster with 2 TM 0.34 nodes and 6 TM 0.35 nodes
-$ make NB_NODES_34=2 NB_NODES_35=6 start-nodes
+$ make NB_NODES_A=2 NB_NODES_B=6 start-nodes
 ```
 
 ## Resiliency tests

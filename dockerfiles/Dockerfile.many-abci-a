@@ -1,4 +1,4 @@
 FROM ubuntu:22.10
 RUN apt -y update && apt -y upgrade && apt -y install libssl3
-COPY tm34-bins/many-abci /
+COPY a-bins/many-abci /
 ENTRYPOINT ["/many-abci"]
