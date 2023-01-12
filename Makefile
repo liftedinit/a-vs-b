@@ -7,8 +7,8 @@ B_MAX := $(shell echo $$(( $(NB_NODES_A) + $(NB_NODES_B) )))
 NODES_A := $(addsuffix .done,$(addprefix genfiles/nodeA_,$(shell seq 1 ${NB_NODES_A})))
 NODES_B := $(addsuffix .done,$(addprefix genfiles/nodeB_,$(shell seq ${B_MIN} ${B_MAX})))
 DOCKER := docker run --user $$(id -u) --rm
-TM_A := tendermint/tendermint:v0.34.24
-TM_B := tendermint/tendermint:v0.35.4
+TM_A := tendermint/tendermint:v0.35.8
+TM_B := tendermint/tendermint:v0.35.8
 OUTPUT_DIR = ${PWD}/genfiles
 TM_A_ROOT := ${OUTPUT_DIR}/nodeA
 TM_B_ROOT := ${OUTPUT_DIR}/nodeB
@@ -72,7 +72,9 @@ endef
 
 .PHONY: clean
 clean:
-	make stop-nodes
+	if [[ -d genfiles ]]; then \
+		make stop-nodes; \
+	fi
 	rm -rf genfiles
 
 genfiles/buildA: NODE_TYPE := a
@@ -165,7 +167,7 @@ start-nodes-background: genfiles/buildA genfiles/buildB genfiles/docker_compose.
 
 .PHONY: stop-nodes
 stop-nodes:
-	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger down
+	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger stop
 
 .PHONY: stop-single-node
 stop-single-node:
