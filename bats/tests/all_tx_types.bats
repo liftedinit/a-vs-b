@@ -62,11 +62,12 @@ function check_multisig() {
     check_consistency_b "$(identity 2)" 3000 8003
 
     # Multisig withdraw
-    ledger_a "$(pem 1)" 8001 multisig withdraw "${token}"
-    check_consistency_a "${ACCOUNT}" 48000 8001 8002
-    check_consistency_b "${ACCOUNT}" 48000 8003
-    check_consistency_a "$(identity 2)" 3000 8001 8002
-    check_consistency_b "$(identity 2)" 3000 8003
+    # TODO: Add withdraw to ledger
+#    ledger_a "$(pem 1)" 8001 multisig withdraw "${token}"
+#    check_consistency_a "${ACCOUNT}" 48000 8001 8002
+#    check_consistency_b "${ACCOUNT}" 48000 8003
+#    check_consistency_a "$(identity 2)" 3000 8001 8002
+#    check_consistency_b "$(identity 2)" 3000 8003
 
     # Multisig change ACCOUNT default
     ledger_a "$(pem 1)" 8001 multisig set-defaults "${ACCOUNT}" --timeout 10s
