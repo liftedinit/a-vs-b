@@ -7,8 +7,10 @@ B_MAX := $(shell echo $$(( $(NB_NODES_A) + $(NB_NODES_B) )))
 NODES_A := $(addsuffix .done,$(addprefix genfiles/nodeA_,$(shell seq 1 ${NB_NODES_A})))
 NODES_B := $(addsuffix .done,$(addprefix genfiles/nodeB_,$(shell seq ${B_MIN} ${B_MAX})))
 DOCKER := docker run --user $$(id -u) --rm
-TM_A := tendermint/tendermint:v0.35.8
+TM_A := tendermint/tendermint:v0.34.24
 TM_B := tendermint/tendermint:v0.35.8
+BIN_A := a-bins
+BIN_B := b-bins
 OUTPUT_DIR = ${PWD}/genfiles
 TM_A_ROOT := ${OUTPUT_DIR}/nodeA
 TM_B_ROOT := ${OUTPUT_DIR}/nodeB
@@ -25,6 +27,9 @@ define TM_INIT =
 	$(DOCKER) -v ${ROOT}_$*/:/export alpine/openssl genpkey -algorithm Ed25519 -out /export/ledger.pem
 	$(DOCKER) -v ${ROOT}_$*/:/export alpine/openssl genpkey -algorithm Ed25519 -out /export/abci.pem
 	cp ledger_state.json5 ${ROOT}_$*/
+	if [ -f "$(CURDIR)/${BIN}/migrations.json" ]; then \
+		cp "${BIN}/migrations.json" ${ROOT}_$*/; \
+	fi
 endef
 
 # Retrieve the Tendermint node ID
@@ -72,7 +77,7 @@ endef
 
 .PHONY: clean
 clean:
-	if [[ -d genfiles ]]; then \
+	if [ -f "$(CURDIR)/genfiles/docker-compose.json" ]; then \
 		make stop-nodes; \
 	fi
 	rm -rf genfiles
@@ -93,6 +98,7 @@ genfiles/nodeA_%.validator: genfiles/nodeA_%.init
 # Initialize node A configuration, persitent storage and keys
 genfiles/nodeA_%.init: ROOT := ${TM_A_ROOT}
 genfiles/nodeA_%.init: TM := ${TM_A}
+genfiles/nodeA_%.init: BIN := ${BIN_A}
 genfiles/nodeA_%.init:
 	$(TM_INIT)
 
@@ -114,7 +120,7 @@ $(NODES_A): genfiles/nodeA_%.done: genfiles/node.validators genfiles/node_%.conf
 # The value from this target will be used to set the `p2p persistent peers` configuration file entry
 genfiles/node_%.config: $(NODES_A:%done=%nodeid) $(NODES_B:%done=%nodeid)
 	shopt -s extglob; \
- 	eval 'paste -d "," ${OUTPUT_DIR}/node*_!($*).nodeid > $@'
+	eval 'paste -d "," ${OUTPUT_DIR}/node*_!($*).nodeid > $@'
 
 # Concatenate all node validators
 genfiles/node.validators: $(NODES_A:%done=%validator) $(NODES_B:%done=%validator)
@@ -128,6 +134,7 @@ genfiles/nodeB_%.validator: genfiles/nodeB_%.init
 # Initialize node B configuration, persitent storage and keys
 genfiles/nodeB_%.init: ROOT := ${TM_B_ROOT}
 genfiles/nodeB_%.init: TM := ${TM_B}
+genfiles/nodeB_%.init: BIN := ${BIN_B}
 genfiles/nodeB_%.init:
 	$(TM_INIT)
 
@@ -154,6 +161,8 @@ genfiles/docker_compose.json: $(NODES_A) $(NODES_B)
 		--tla-code NB_NODES_B=$(NB_NODES_B) \
 		--tla-code tendermint_A_tag="\"$(TM_A)\"" \
 		--tla-code tendermint_B_tag="\"$(TM_B)\"" \
+		--tla-code enable_migrations_A="$(shell test -f $(BIN_A)/migrations.json && echo true || echo false)" \
+		--tla-code enable_migrations_B="$(shell test -f $(BIN_B)/migrations.json && echo true || echo false)" \
 		--tla-code user=$$(id -u) \
 		-o /$@
 

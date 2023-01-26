@@ -18,7 +18,7 @@ Tendermint 0.34 and 0.35 configuration files are supported.
 - bash
 - GNU make
 - coreutils
-- (optional, tests) bats-core >= 1.7 
+- (optional, tests) bats-core >= 1.7
 
 ## Quick start
 
@@ -26,6 +26,7 @@ Place the binaries in their respective `X-bins` folder. E.g.
 
 ```bash
 X-bins
+├── (optional) migrations.json
 ├── many
 ├── http_proxy
 ├── idstore-export
@@ -36,7 +37,7 @@ X-bins
 └── many-ledger
 ```
 
-Run 
+Run
 
 ```bash
 # Use `make start-nodes-background` instead to start cluster detached from the terminal

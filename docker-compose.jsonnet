@@ -11,7 +11,6 @@ local generate_allow_addrs_flag(allow_addrs) =
         [];
 
 local abci_command(i) = [
-//        "--verbose", "--verbose",
         "--many", "0.0.0.0:8000",
         "--many-app", "http://ledger-" + i + ":8000",
         "--many-pem", "/genfiles/abci.pem",
@@ -20,7 +19,7 @@ local abci_command(i) = [
     ];
 
 local ledger_command(i) = [
-//        "--verbose", "--verbose",
+        "-v",
         "--abci",
         "--state=/genfiles/ledger_state.json5",
         "--pem=/genfiles/ledger.pem",
@@ -99,18 +98,19 @@ function(NB_NODES_A=2,
 		 tendermint_A_tag="",
 		 tendermint_B_tag="",
 		 allow_addrs=false,
-		 enable_migrations=false) {
+		 enable_migrations_A=false,
+         enable_migrations_B=false ) {
     version: '3',
     services: {
         ["abci-" + i]: abci_A(i, user, "many-abci-a", allow_addrs) for i in std.range(1, NB_NODES_A )
     } + {
-        ["ledger-" + i]: ledger_A(i, user, "many-ledger-a", enable_migrations) for i in std.range(1, NB_NODES_A)
+        ["ledger-" + i]: ledger_A(i, user, "many-ledger-a", enable_migrations_A) for i in std.range(1, NB_NODES_A)
     } + {
         ["tendermint-" + i]: tendermint(i, "A", user, tendermint_A_tag) for i in std.range(1, NB_NODES_A)
     } + {
         ["abci-" + i]: abci_B(i, user, "many-abci-b", allow_addrs) for i in std.range(NB_NODES_A + 1, NB_NODES_A + NB_NODES_B)
     } + {
-        ["ledger-" + i]: ledger_B(i, user, "many-ledger-b", enable_migrations) for i in std.range(NB_NODES_A + 1, NB_NODES_A + NB_NODES_B)
+        ["ledger-" + i]: ledger_B(i, user, "many-ledger-b", enable_migrations_B) for i in std.range(NB_NODES_A + 1, NB_NODES_A + NB_NODES_B)
     } + {
         ["tendermint-" + i]: tendermint(i, "B", user, tendermint_B_tag) for i in std.range(NB_NODES_A + 1, NB_NODES_A + NB_NODES_B)
     },
