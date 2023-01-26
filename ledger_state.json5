@@ -13,8 +13,8 @@
     "maffbahksdwaqeenayy2gxke32hgb7aq4ao4wt745lsfs6wijp": {
       "MFX": 1000000000
     },
-    "mqdukzwuwgt3porn6q4vq4xu3mwy5gyskhouryzbscq7wb2iaaaaq25": {
-      "MFX": 1000000000
+    "mqdukzwuwgt3porn6q4vq4xu3mwy5gyskhouryzbscq7wb2iaaaaac6": {
+      "MFX": 50000
     }
   },
 
@@ -38,8 +38,8 @@
       // Roles for this account. At least one `owner` MUST be specified here.
       roles: {
         "maffbahksdwaqeenayy2gxke32hgb7aq4ao4wt745lsfs6wijp": ["owner", "canMultisigSubmit"],
-        "mafbp553oq57taqhnz3muqombqtw4eiqsqoaux4hmwtv2xuyf3": ["canMultisigApprove"],
-        "mahukzwuwgt3porn6q4vq4xu3mwy5gyskhouryzbscq7wb2iow": ["canMultisigApprove"]
+        "maedvkiz27dvjg5pu432ayatdqpnkonefww73asgkzm4ct5a5z": ["canMultisigApprove"],
+        "maem7b3bkzipk4dluaxjlw2pnwjll4rggqn4akimt3xhjhja55": ["canMultisigApprove"]
       },
 
       // List of features for the account. The `arg` key is any valid JSON and will be
@@ -61,15 +61,12 @@
       description: "Generic account for testing (2)",
       roles: {
         "maffbahksdwaqeenayy2gxke32hgb7aq4ao4wt745lsfs6wijp": ["owner"],
-        "mafbp553oq57taqhnz3muqombqtw4eiqsqoaux4hmwtv2xuyf3": ["canLedgerTransact"],
-        "mahukzwuwgt3porn6q4vq4xu3mwy5gyskhouryzbscq7wb2iow": ["canLedgerTransact"]
+        "maedvkiz27dvjg5pu432ayatdqpnkonefww73asgkzm4ct5a5z": ["canLedgerTransact"],
+        "maem7b3bkzipk4dluaxjlw2pnwjll4rggqn4akimt3xhjhja55": ["canLedgerTransact"]
       },
       features: [
         { id: 0 }
       ]
     }
   ],
-
-  // Hash calculated after the initial state is created.
-  hash: "fc0041ca4f7d959fe9e5a337e175bd8a68942cad76745711a3daf820a159f7eb"
 }

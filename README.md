@@ -27,6 +27,7 @@ Place the binaries in their respective `X-bins` folder. E.g.
 ```bash
 X-bins
 ├── (optional) migrations.json
+├── many
 ├── http_proxy
 ├── idstore-export
 ├── kvstore

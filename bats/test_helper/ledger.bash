@@ -6,14 +6,21 @@ function call_ledger() {
     run "$GIT_ROOT/${path}/ledger" --pem "$pem" "http://localhost:${port}/" "$@"
 }
 
+function call_ledger_anon() {
+    local port="$1"
+    local path="$2"
+    shift 2
+    run "$GIT_ROOT/${path}/ledger" "http://localhost:${port}/" "$@"
+}
+
 function check_consistency() {
-    local pem="$1"
+    local identity="$1"
     local expected_balance="$2"
     local path="$3"
     shift 3
 
     for port in "$@"; do
-        call_ledger "$pem" "$port" "$path" balance
+        call_ledger_anon "$port" "$path" balance "$identity"
         assert_output --partial " $expected_balance MFX "
     done
 }
@@ -33,15 +40,15 @@ function ledger_b() {
 }
 
 function check_consistency_a() {
-    local pem="$1"
+    local identity="$1"
     local expected_balance="$2"
     shift 2
-    check_consistency "$pem" "$expected_balance" "a-bins" "$@"
+    check_consistency "$identity" "$expected_balance" "a-bins" "$@"
 }
 
 function check_consistency_b() {
-    local pem="$1"
+    local identity="$1"
     local expected_balance="$2"
     shift 2
-    check_consistency "$pem" "$expected_balance" "b-bins" "$@"
+    check_consistency "$identity" "$expected_balance" "b-bins" "$@"
 }

@@ -176,7 +176,7 @@ start-nodes-background: genfiles/buildA genfiles/buildB genfiles/docker_compose.
 
 .PHONY: stop-nodes
 stop-nodes:
-	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger down
+	docker-compose -f ${OUTPUT_DIR}/docker_compose.json -p e2e-ledger stop
 
 .PHONY: stop-single-node
 stop-single-node:
