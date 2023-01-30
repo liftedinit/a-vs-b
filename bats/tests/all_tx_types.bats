@@ -1,7 +1,6 @@
 GIT_ROOT="$BATS_TEST_DIRNAME/../../"
 ACCOUNT="mqdukzwuwgt3porn6q4vq4xu3mwy5gyskhouryzbscq7wb2iaaaaac6"
 
-
 load '../test_helper/load'
 
 function setup() {
@@ -140,6 +139,44 @@ function check_account() {
     assert_output --partial "3: true"
 }
 
+function check_ledger_token() {
+    local token
+
+    # Create token
+    ledger_a "$(pem 1)" 8001 token create Foobar FBR 9
+    assert_output --partial "TokenCreateReturns"
+
+    # TODO: Use the symbol ticker instead of the symbol address when support is added to `ledger`
+    token=$(echo "${output}" | grep -Pzo '(?s)symbol:.*?\),' | sed -n '3p' | cut -d '"' -f 2)
+
+    # Update token
+    ledger_a "$(pem 1)" 8001 token update "$token" --ticker ABC --name "def" --memo "A memo"
+    ledger_a "$(pem 1)" 8001 token info "$token"
+    assert_output --partial "ABC"
+    assert_output --partial "def"
+
+    # Add ext. info
+    ledger_a "$(pem 1)" 8001 token add-ext-info "$token" memo "Some memo"
+    ledger_a "$(pem 1)" 8001 token info "$token"
+    assert_output --partial "Some memo"
+
+    # Remove ext.info
+    ledger_a "$(pem 1)" 8001 token remove-ext-info "$token" 0
+    refute_output --partial "Some memo"
+
+    # Mint
+    ledger_a "$(pem 1)" 8001 token mint "$token" '{"'"$(identity 2)"'": 123}'
+    sleep 1
+    ledger_a "$(pem 2)" 8001 balance
+    assert_output --partial "123"
+
+    # Burn
+    ledger_a "$(pem 1)" 8001 token burn "$token" '{"'"$(identity 2)"'": 123}' --error-on-under-burn
+    sleep 1
+    ledger_a "$(pem 2)" 8001 balance
+    refute_output --partial "123"
+}
+
 @test "$SUITE: Hybrid network supports all tx types. B can catch up." {
     for i in {1..3}; do
       make NB_NODES_A=2 NB_NODES_B=2 NODE="${i}" start-single-node-background || {
@@ -162,6 +199,80 @@ EOT
     check_ledger_commands
     check_account
     check_multisig
+
+    make NB_NODES_A=2 NB_NODES_B=2 NODE="4" start-single-node-background || {
+      echo Could not start nodes... >&3
+      exit 1
+    }
+    timeout 30s bash <<EOT
+    while ! $GIT_ROOT/b-bins/many message --server http://localhost:8004 status; do
+      sleep 1
+    done >/dev/null
+EOT
+
+    sleep 30
+
+    check_consistency_a "$(identity 1)" 999999000 8001 8002
+    check_consistency_b "$(identity 1)" 999999000 8003 8004
+    check_consistency_a "${ACCOUNT}" 48000 8001 8002
+    check_consistency_b "${ACCOUNT}" 48000 8003 8004
+    check_consistency_a "$(identity 2)" 3000 8001 8002
+    check_consistency_b "$(identity 2)" 3000 8003 8004
+}
+
+@test "$SUITE: Hybrid network support token tx types. B can catch up." {
+    local a_block_height
+    local a_disabled
+    local b_block_height
+    local b_disabled
+
+    local block_height_query
+    local disabled_query
+    block_height_query=('.[] | map(select(.name == "Token Migration")) | .[].block_height')
+    disabled_query=('.[] | map(select(.name == "Token Migration")) | .[].disabled')
+
+    if [ -f "$GIT_ROOT/a-bins/migrations.json" ] && [ -f "$GIT_ROOT/b-bins/migrations.json" ]; then \
+      a_block_height=$(jq "${block_height_query[@]}" "$GIT_ROOT/a-bins/migrations.json"); \
+      b_block_height=$(jq "${block_height_query[@]}" "$GIT_ROOT/b-bins/migrations.json"); \
+      a_disabled=$(jq "${disabled_query[@]}" "$GIT_ROOT/a-bins/migrations.json"); \
+      b_disabled=$(jq "${disabled_query[@]}" "$GIT_ROOT/b-bins/migrations.json"); \
+
+      if [ "$a_disabled" = "true" ] || [ "$b_disabled" = "true" ]; then \
+        skip "Token migration is disabled"; \
+      fi
+
+      if [ "$a_block_height" != "$b_block_height" ]; then \
+        skip "Token migration block height are not the same"; \
+      fi
+    else \
+      skip "Migration files not found"; \
+    fi
+
+    for i in {1..3}; do
+      make NB_NODES_A=2 NB_NODES_B=2 NODE="${i}" start-single-node-background || {
+        echo Could not start nodes... >&3
+        exit 1
+      }
+    done
+
+    # Give time to the servers to start.
+    sleep 30
+    timeout 60s bash <<EOT
+      while ! $GIT_ROOT/a-bins/many message --server http://localhost:8002 status; do
+        sleep 1
+      done >/dev/null
+EOT
+
+    # At this point, `a_block_height` == `b_block_height`
+    wait_for_block "$a_block_height" 8001
+
+    check_consistency_a "$(identity 1)" 1000000000 8001 8002
+    check_consistency_b "$(identity 1)" 1000000000 8003
+
+    check_ledger_commands
+    check_account
+    check_multisig
+    check_ledger_token
 
     make NB_NODES_A=2 NB_NODES_B=2 NODE="4" start-single-node-background || {
       echo Could not start nodes... >&3
