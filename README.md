@@ -5,7 +5,7 @@ PoC MANY hybrid network
 A hybrid network can consist of
 
 - Different Tendermint versions
-- Different `many-framework` versions
+- Different `many-rs` versions
 - Both
 
 Tendermint 0.34 and 0.35 configuration files are supported.
