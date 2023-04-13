@@ -1,4 +1,4 @@
 FROM ubuntu:22.10
-RUN apt -y update && apt -y upgrade && apt -y install libssl3
+RUN apt -y update && apt -y upgrade && apt -y install libssl3 libusb-1.0-0-dev
 COPY b-bins/many-ledger /
 ENTRYPOINT ["/many-ledger"]
