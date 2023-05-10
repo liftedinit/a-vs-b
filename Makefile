@@ -6,7 +6,7 @@ B_MAX := $(shell echo $$(( $(NB_NODES_A) + $(NB_NODES_B) )))
 
 NODES_A := $(addsuffix .done,$(addprefix genfiles/nodeA_,$(shell seq 1 ${NB_NODES_A})))
 NODES_B := $(addsuffix .done,$(addprefix genfiles/nodeB_,$(shell seq ${B_MIN} ${B_MAX})))
-DOCKER := docker run --user $$(id -u) --rm
+DOCKER := docker run --platform linux/x86_64 --user $$(id -u) --rm
 TM_A := tendermint/tendermint:v0.34.24
 TM_B := tendermint/tendermint:v0.35.8
 BIN_A := a-bins
@@ -47,8 +47,8 @@ endef
 # Build the ledger and ABCI docker images
 define DOCKER_BUILD =
 	mkdir -p ${OUTPUT_DIR}
-	docker build . -f dockerfiles/Dockerfile.many-abci-${NODE_TYPE} -t hybrid/many-abci-${NODE_TYPE}
-	docker build . -f dockerfiles/Dockerfile.many-ledger-${NODE_TYPE} -t hybrid/many-ledger-${NODE_TYPE}
+	docker build . --platform linux/x86_64 -f dockerfiles/Dockerfile.many-abci-${NODE_TYPE} -t hybrid/many-abci-${NODE_TYPE}
+	docker build . --platform linux/x86_64 -f dockerfiles/Dockerfile.many-ledger-${NODE_TYPE} -t hybrid/many-ledger-${NODE_TYPE}
 	touch $@
 endef
 
