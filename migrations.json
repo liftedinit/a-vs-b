@@ -5,8 +5,13 @@
     "issue": "https://github.com/liftedinit/many-framework/issues/190"
   },
   {
+    "name": "Block 9400",
+    "block_height": 0,
+    "disabled": true
+  },
+  {
     "name": "Memo Migration",
-    "block_height": 1 
+    "block_height": 1
   },
   {
     "name": "Token Migration",
@@ -20,6 +25,11 @@
     "symbol_circulating": 100000000000000000,
     "symbol_maximum": null,
     "symbol_owner": "maffbahksdwaqeenayy2gxke32hgb7aq4ao4wt745lsfs6wijp"
+  },
+  {
+    "name": "LegacyRemoveRoles",
+    "block_height": 0,
+    "upper_block_height": 0,
+    "disabled": true
   }
 ] }
-
