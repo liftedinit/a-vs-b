@@ -35,6 +35,7 @@ local abci_A(i, user, abci_img, allow_addrs) = {
     user: "" + user,
     command: abci_command(i) + generate_allow_addrs_flag(allow_addrs),
     depends_on: [ "ledger-" + i ],
+    cap_add: ["NET_ADMIN"],
 };
 
 local abci_B(i, user, abci_img, allow_addrs) = {
@@ -45,6 +46,7 @@ local abci_B(i, user, abci_img, allow_addrs) = {
     user: "" + user,
     command: abci_command(i) + generate_allow_addrs_flag(allow_addrs),
     depends_on: [ "ledger-" + i ],
+    cap_add: ["NET_ADMIN"],
 };
 
 local ledger_A(i, user, ledger_img, enable_migrations) = {
@@ -55,7 +57,8 @@ local ledger_A(i, user, ledger_img, enable_migrations) = {
         "./nodeA_" + i + ":/genfiles:ro",
     ],
     platform: "linux/x86_64",
-    command: ledger_command(i) + load_migrations(enable_migrations)
+    command: ledger_command(i) + load_migrations(enable_migrations),
+    cap_add: ["NET_ADMIN"],
 };
 
 local ledger_B(i, user, ledger_img, enable_migrations) = {
@@ -66,7 +69,8 @@ local ledger_B(i, user, ledger_img, enable_migrations) = {
         "./nodeB_" + i + ":/genfiles:ro",
     ],
     platform: "linux/x86_64",
-    command: ledger_command(i) + load_migrations(enable_migrations)
+    command: ledger_command(i) + load_migrations(enable_migrations),
+    cap_add: ["NET_ADMIN"],
 };
 
 local generate_tm_command(i, tendermint_tag) =
@@ -94,6 +98,7 @@ local tendermint(i, type="", user, tendermint_tag) = {
         "./node" + type + "_" + i + "/tendermint/:/tendermint"
     ],
     ports: [ "" + (26600 + i) + ":26657" ],
+    cap_add: ["NET_ADMIN"],
 };
 
 function(NB_NODES_A=2,
