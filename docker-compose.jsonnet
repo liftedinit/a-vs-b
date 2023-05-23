@@ -14,6 +14,7 @@ local abci_command(i) = [
         "--many", "0.0.0.0:8000",
         "--many-app", "http://ledger-" + i + ":8000",
         "--many-pem", "/genfiles/abci.pem",
+        "--cache-db", "/persistent/abci_request_cache.db",
         "--abci", "0.0.0.0:26658",
         "--tendermint", "http://tendermint-" + i + ":26657/"
     ];
@@ -30,7 +31,9 @@ local ledger_command(i) = [
 local abci_A(i, user, abci_img, allow_addrs) = {
     image: "hybrid/" + abci_img,
     ports: [ (8000 + i) + ":8000" ],
-    volumes: [ "./nodeA_" + i + ":/genfiles:ro" ],
+    volumes: [ "./nodeA_" + i + ":/genfiles:ro",
+               "./nodeA_" + i + "/persistent-abci:/persistent",
+    ],
     platform: "linux/x86_64",
     user: "" + user,
     command: abci_command(i) + generate_allow_addrs_flag(allow_addrs),
@@ -41,7 +44,9 @@ local abci_A(i, user, abci_img, allow_addrs) = {
 local abci_B(i, user, abci_img, allow_addrs) = {
     image: "hybrid/" + abci_img,
     ports: [ (8000 + i) + ":8000" ],
-    volumes: [ "./nodeB_" + i + ":/genfiles:ro" ],
+    volumes: [ "./nodeB_" + i + ":/genfiles:ro",
+               "./nodeB_" + i + "/persistent-abci:/persistent",
+    ],
     platform: "linux/x86_64",
     user: "" + user,
     command: abci_command(i) + generate_allow_addrs_flag(allow_addrs),

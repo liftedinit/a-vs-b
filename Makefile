@@ -22,6 +22,7 @@ SHELL := bash
 # Copy the ledger staging file
 define TM_INIT =
 	mkdir -p "${ROOT}_$*/tendermint"
+	mkdir -p "${ROOT}_$*/persistent-abci"
 	mkdir -p "${ROOT}_$*/persistent-ledger"
 	$(DOCKER) -v ${ROOT}_$*/tendermint:/tendermint ${TM} init validator
 	$(DOCKER) -v ${ROOT}_$*/:/export alpine/openssl genpkey -algorithm Ed25519 -out /export/ledger.pem
@@ -52,6 +53,7 @@ define DOCKER_BUILD =
 	touch $@
 endef
 
+# WARN: The `all_tx_types` test will fail with mempool cache size set to "0"
 define UPDATE_CONFIG =
 	if [[ "${TM}" == *"v0.34"* ]]; then \
 		$(UPDATE_CMD) '' proxy_app "\"tcp:\/\/abci-$*:26658\/\""; \
@@ -61,6 +63,7 @@ define UPDATE_CONFIG =
 		$(UPDATE_CMD) p2p persistent_peers "\"$$(cat ${OUTPUT_DIR}/node_$*.config)\""; \
 		$(UPDATE_CMD) p2p max_packet_msg_payload_size "1400"; \
 		$(UPDATE_CMD) p2p pex "false"; \
+		$(UPDATE_CMD) mempool cache_size "0"; \
 	elif [[ "${TM}" == *"v0.35"* ]]; then \
 		$(UPDATE_CMD) '' proxy-app "\"tcp:\/\/abci-$*:26658\/\""; \
 		$(UPDATE_CMD) '' moniker "\"many-tendermint-$*\""; \
@@ -68,6 +71,7 @@ define UPDATE_CONFIG =
 		$(UPDATE_CMD) consensus timeout-precommit "\"2s\""; \
 		$(UPDATE_CMD) p2p persistent-peers "\"$$(cat ${OUTPUT_DIR}/node_$*.config)\""; \
 		$(UPDATE_CMD) p2p pex "false"; \
+		$(UPDATE_CMD) mempool cache-size "0"; \
 	else \
 		@echo "Unsupported Tendermint version." ; false ; \
 	fi
