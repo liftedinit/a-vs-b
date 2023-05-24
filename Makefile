@@ -63,7 +63,6 @@ define UPDATE_CONFIG =
 		$(UPDATE_CMD) p2p persistent_peers "\"$$(cat ${OUTPUT_DIR}/node_$*.config)\""; \
 		$(UPDATE_CMD) p2p max_packet_msg_payload_size "1400"; \
 		$(UPDATE_CMD) p2p pex "false"; \
-		$(UPDATE_CMD) mempool cache_size "0"; \
 	elif [[ "${TM}" == *"v0.35"* ]]; then \
 		$(UPDATE_CMD) '' proxy-app "\"tcp:\/\/abci-$*:26658\/\""; \
 		$(UPDATE_CMD) '' moniker "\"many-tendermint-$*\""; \
@@ -71,7 +70,6 @@ define UPDATE_CONFIG =
 		$(UPDATE_CMD) consensus timeout-precommit "\"2s\""; \
 		$(UPDATE_CMD) p2p persistent-peers "\"$$(cat ${OUTPUT_DIR}/node_$*.config)\""; \
 		$(UPDATE_CMD) p2p pex "false"; \
-		$(UPDATE_CMD) mempool cache-size "0"; \
 	else \
 		@echo "Unsupported Tendermint version." ; false ; \
 	fi
