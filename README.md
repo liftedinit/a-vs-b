@@ -26,7 +26,8 @@ Place the binaries in their respective `X-bins` folder. E.g.
 
 ```bash
 X-bins
-├── (optional) migrations.json
+├── (optional) abci_migrations.json
+├── (optional) ledger_migrations.json
 ├── many
 ├── http_proxy
 ├── idstore-export
@@ -44,7 +45,7 @@ Run
 $ make start-nodes
 ```
 
-to run a hybrid 4 nodes cluster, where the default is to run 2 nodes (A) on TM 0.34 and 2 nodes (B) on TM 0.35.
+to run a hybrid 4 nodes cluster, where the default is to run 4 nodes on TM 0.34
 
 ### Custom number of nodes
 
@@ -52,7 +53,7 @@ The number of nodes running can be modified by setting the `NB_NODES_A` and `NB_
 
 E.g.
 ```bash
-# Start a cluster with 2 TM 0.34 nodes and 6 TM 0.35 nodes
+# Start a cluster with 2 `A` nodes and 6 `B` nodes
 $ make NB_NODES_A=2 NB_NODES_B=6 start-nodes
 ```
 
