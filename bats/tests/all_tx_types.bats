@@ -193,6 +193,8 @@ function check_ledger_token() {
       done >/dev/null
 EOT
 
+    wait_for_block 30 8001
+
     check_consistency_a "$(identity 1)" 1000000000 8001 8002
     check_consistency_b "$(identity 1)" 1000000000 8003
 
@@ -231,11 +233,11 @@ EOT
     block_height_query=('.[] | map(select(.name == "Token Migration")) | .[].block_height')
     disabled_query=('.[] | map(select(.name == "Token Migration")) | .[].disabled')
 
-    if [ -f "$GIT_ROOT/a-bins/migrations.json" ] && [ -f "$GIT_ROOT/b-bins/migrations.json" ]; then \
-      a_block_height=$(jq "${block_height_query[@]}" "$GIT_ROOT/a-bins/migrations.json"); \
-      b_block_height=$(jq "${block_height_query[@]}" "$GIT_ROOT/b-bins/migrations.json"); \
-      a_disabled=$(jq "${disabled_query[@]}" "$GIT_ROOT/a-bins/migrations.json"); \
-      b_disabled=$(jq "${disabled_query[@]}" "$GIT_ROOT/b-bins/migrations.json"); \
+    if [ -f "$GIT_ROOT/a-bins/ledger_migrations.json" ] && [ -f "$GIT_ROOT/b-bins/ledger_migrations.json" ]; then \
+      a_block_height=$(jq "${block_height_query[@]}" "$GIT_ROOT/a-bins/ledger_migrations.json"); \
+      b_block_height=$(jq "${block_height_query[@]}" "$GIT_ROOT/b-bins/ledger_migrations.json"); \
+      a_disabled=$(jq "${disabled_query[@]}" "$GIT_ROOT/a-bins/ledger_migrations.json"); \
+      b_disabled=$(jq "${disabled_query[@]}" "$GIT_ROOT/b-bins/ledger_migrations.json"); \
 
       if [ "$a_disabled" = "true" ] || [ "$b_disabled" = "true" ]; then \
         skip "Token migration is disabled"; \
