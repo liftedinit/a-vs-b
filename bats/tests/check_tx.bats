@@ -6,9 +6,8 @@ function setup() {
     mkdir "$BATS_TEST_ROOTDIR"
     cd "$GIT_ROOT" || exit
 
-    # Build custom Tendermint images containing the `iproute2` package
+    # Build custom Tendermint image containing the `iproute2` package
     docker build . --platform linux/x86_64 -f dockerfiles/Dockerfile.tendermint_iproute2_0.34.24 -t tendermint_iproute2:v0.34.24
-    docker build . --platform linux/x86_64 -f dockerfiles/Dockerfile.tendermint_iproute2_0.35.8 -t tendermint_iproute2:v0.35.8
 
     (
       make clean
@@ -18,7 +17,7 @@ function setup() {
                NB_NODES_B=2 \
                NODE="${i}" \
                TM_A=tendermint_iproute2:v0.34.24 \
-               TM_B=tendermint_iproute2:v0.35.8 start-single-node-background || {
+               TM_B=tendermint_iproute2:v0.34.24 start-single-node-background || {
             echo Could not start nodes... >&3
             exit 1
           }
