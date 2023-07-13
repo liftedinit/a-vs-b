@@ -1,0 +1,6 @@
+FROM tendermint/tendermint:v0.34.24
+USER root
+RUN apk update && apk add iproute2
+USER tmuser
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["node"]
