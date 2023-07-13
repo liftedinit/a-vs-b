@@ -8,7 +8,7 @@ NODES_A := $(addsuffix .done,$(addprefix genfiles/nodeA_,$(shell seq 1 ${NB_NODE
 NODES_B := $(addsuffix .done,$(addprefix genfiles/nodeB_,$(shell seq ${B_MIN} ${B_MAX})))
 DOCKER := docker run --platform linux/x86_64 --user $$(id -u) --rm
 TM_A := tendermint/tendermint:v0.34.24
-TM_B := tendermint/tendermint:v0.35.8
+TM_B := tendermint/tendermint:v0.34.24
 BIN_A := a-bins
 BIN_B := b-bins
 OUTPUT_DIR = ${PWD}/genfiles
@@ -27,8 +27,8 @@ define TM_INIT =
 	$(DOCKER) -v ${ROOT}_$*/:/export alpine/openssl genpkey -algorithm Ed25519 -out /export/ledger.pem
 	$(DOCKER) -v ${ROOT}_$*/:/export alpine/openssl genpkey -algorithm Ed25519 -out /export/abci.pem
 	cp ledger_state.json5 ${ROOT}_$*/
-	if [ -f "$(CURDIR)/${BIN}/migrations.json" ]; then \
-		cp "${BIN}/migrations.json" ${ROOT}_$*/; \
+	if [ -f "$(CURDIR)/${BIN}/ledger_migrations.json" ]; then \
+		cp "${BIN}/ledger_migrations.json" ${ROOT}_$*/; \
 	fi
 endef
 
@@ -161,8 +161,8 @@ genfiles/docker_compose.json: $(NODES_A) $(NODES_B)
 		--tla-code NB_NODES_B=$(NB_NODES_B) \
 		--tla-code tendermint_A_tag="\"$(TM_A)\"" \
 		--tla-code tendermint_B_tag="\"$(TM_B)\"" \
-		--tla-code enable_migrations_A="$(shell test -f $(BIN_A)/migrations.json && echo true || echo false)" \
-		--tla-code enable_migrations_B="$(shell test -f $(BIN_B)/migrations.json && echo true || echo false)" \
+		--tla-code enable_migrations_A="$(shell test -f $(BIN_A)/ledger_migrations.json && echo true || echo false)" \
+		--tla-code enable_migrations_B="$(shell test -f $(BIN_B)/ledger_migrations.json && echo true || echo false)" \
 		--tla-code user=$$(id -u) \
 		-o /$@
 

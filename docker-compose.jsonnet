@@ -1,6 +1,6 @@
-local load_migrations(enable_migrations) =
+local load_ledger_migrations(enable_migrations) =
     if enable_migrations then
-        ["--migrations-config=/genfiles/migrations.json"]
+        ["--migrations-config=/genfiles/ledger_migrations.json"]
     else
         [];
 
@@ -15,6 +15,7 @@ local abci_command(i) = [
         "--many-app", "http://ledger-" + i + ":8000",
         "--many-pem", "/genfiles/abci.pem",
         "--abci", "0.0.0.0:26658",
+        "--cache-db", "/persistent/abci_request_cache.db",
         "--tendermint", "http://tendermint-" + i + ":26657/"
     ];
 
@@ -30,7 +31,12 @@ local ledger_command(i) = [
 local abci_A(i, user, abci_img, allow_addrs) = {
     image: "hybrid/" + abci_img,
     ports: [ (8000 + i) + ":8000" ],
-    volumes: [ "./nodeA_" + i + ":/genfiles:ro" ],
+    volumes: [
+        // TODO: have a volume specifically created for the cache db.
+        // Right now we reuse the same volume as the ledger db.
+        "./nodeA_" + i + "/persistent-ledger:/persistent",
+        "./nodeA_" + i + ":/genfiles:ro"
+    ],
     platform: "linux/x86_64",
     user: "" + user,
     command: abci_command(i) + generate_allow_addrs_flag(allow_addrs),
@@ -40,7 +46,12 @@ local abci_A(i, user, abci_img, allow_addrs) = {
 local abci_B(i, user, abci_img, allow_addrs) = {
     image: "hybrid/" + abci_img,
     ports: [ (8000 + i) + ":8000" ],
-    volumes: [ "./nodeB_" + i + ":/genfiles:ro" ],
+    volumes: [
+        // TODO: have a volume specifically created for the cache db.
+        // Right now we reuse the same volume as the ledger db.
+        "./nodeB_" + i + "/persistent-ledger:/persistent",
+        "./nodeB_" + i + ":/genfiles:ro"
+    ],
     platform: "linux/x86_64",
     user: "" + user,
     command: abci_command(i) + generate_allow_addrs_flag(allow_addrs),
@@ -55,7 +66,7 @@ local ledger_A(i, user, ledger_img, enable_migrations) = {
         "./nodeA_" + i + ":/genfiles:ro",
     ],
     platform: "linux/x86_64",
-    command: ledger_command(i) + load_migrations(enable_migrations)
+    command: ledger_command(i) + load_ledger_migrations(enable_migrations)
 };
 
 local ledger_B(i, user, ledger_img, enable_migrations) = {
@@ -66,7 +77,7 @@ local ledger_B(i, user, ledger_img, enable_migrations) = {
         "./nodeB_" + i + ":/genfiles:ro",
     ],
     platform: "linux/x86_64",
-    command: ledger_command(i) + load_migrations(enable_migrations)
+    command: ledger_command(i) + load_ledger_migrations(enable_migrations)
 };
 
 local generate_tm_command(i, tendermint_tag) =
@@ -103,7 +114,7 @@ function(NB_NODES_A=2,
 		 tendermint_B_tag="",
 		 allow_addrs=false,
 		 enable_migrations_A=false,
-         enable_migrations_B=false ) {
+     enable_migrations_B=false) {
     version: '3',
     services: {
         ["abci-" + i]: abci_A(i, user, "many-abci-a", allow_addrs) for i in std.range(1, NB_NODES_A )
