@@ -25,3 +25,6 @@ workflows:
           path: ./bats/tests
           timing: true
           exec_environment: linux2204_machine
+          filters:
+            branches:
+              ignore: master
