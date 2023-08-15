@@ -11,6 +11,7 @@ local generate_allow_addrs_flag(allow_addrs) =
         [];
 
 local abci_command(i) = [
+        "-v", "-v",
         "--many", "0.0.0.0:8000",
         "--many-app", "http://ledger-" + i + ":8000",
         "--many-pem", "/genfiles/abci.pem",
@@ -20,7 +21,7 @@ local abci_command(i) = [
     ];
 
 local ledger_command(i) = [
-        "-v",
+        "-v", "-v",
         "--abci",
         "--state=/genfiles/ledger_state.json5",
         "--pem=/genfiles/ledger.pem",
