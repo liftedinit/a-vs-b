@@ -1,0 +1,27 @@
+# The Lifted Initiative
+version: 2.1
+
+orbs:
+  bats: circleci/bats@1.1.0
+
+executors:
+  linux2204_machine:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large # 4 cores, 15Gb
+
+workflows:
+  a-vs-b:
+    when:
+      equal: [ webhook, << pipeline.trigger_source >> ]
+    jobs:
+      - bats/run:
+          pre-steps:
+            - run:
+                name: Remove old BATS
+                command: sudo rm -rf $(which bats)
+            - bats/install
+          formatter: junit
+          path: ./bats/tests
+          timing: true
+          exec_environment: linux2204_machine
