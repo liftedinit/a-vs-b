@@ -20,7 +20,7 @@ workflows:
             - run:
                 name: Remove old BATS
                 command: sudo rm -rf $(which bats)
-            - run: sudo apt-get -y update && sudo apt-get -y install git-lfs
+            - run: sudo DEBIAN_FRONTEND=noninteractive apt-get -y update && sudo DEBIAN_FRONTEND=noninteractive apt-get -y install git-lfs
           formatter: tap
           report_formatter: junit
           path: ./bats/tests
