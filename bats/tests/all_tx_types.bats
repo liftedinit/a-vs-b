@@ -193,7 +193,7 @@ function check_ledger_token() {
       done >/dev/null
 EOT
 
-    wait_for_block 30 8001
+    wait_for_block_a 30 8001
 
     check_consistency_a "$(identity 1)" 1000000000 8001 8002
     check_consistency_b "$(identity 1)" 1000000000 8003
@@ -266,7 +266,7 @@ EOT
 EOT
 
     # At this point, `a_block_height` == `b_block_height`
-    wait_for_block "$a_block_height" 8001
+    wait_for_block_a "$a_block_height" 8001
 
     check_consistency_a "$(identity 1)" 1000000000 8001 8002
     check_consistency_b "$(identity 1)" 1000000000 8003
