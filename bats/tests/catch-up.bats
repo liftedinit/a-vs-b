@@ -32,7 +32,7 @@ function teardown() {
     # Give time to the servers to start.
     sleep 30
     timeout 60s bash <<EOT
-    while ! many message --server http://localhost:8002 status; do
+    while ! "$GIT_ROOT/a-bins/many" message --server http://localhost:8002 status; do
       sleep 1
     done >/dev/null
 EOT
@@ -83,7 +83,7 @@ EOT
     # Give the missing node some time to boot
     sleep 30
     timeout 30s bash <<EOT
-    while ! many message --server http://localhost:8004 status; do
+    while ! "$GIT_ROOT/b-bins/many" message --server http://localhost:8004 status; do
       sleep 1
     done >/dev/null
 EOT
@@ -106,7 +106,7 @@ EOT
     # Give time to the servers to start.
     sleep 30
     timeout 60s bash <<EOT
-    while ! many message --server http://localhost:8002 status; do
+    while ! "$GIT_ROOT/a-bins/many" message --server http://localhost:8002 status; do
       sleep 1
     done >/dev/null
 EOT
@@ -157,7 +157,7 @@ EOT
     # Give the missing node some time to boot
     sleep 30
     timeout 30s bash <<EOT
-    while ! many message --server http://localhost:8004 status; do
+    while ! "$GIT_ROOT/b-bins/many" message --server http://localhost:8004 status; do
       sleep 1
     done >/dev/null
 EOT
