@@ -27,7 +27,7 @@ function setup() {
     # Give time to the servers to start.
     sleep 30
     timeout 30s bash <<EOT
-    while ! many message --server http://localhost:8003 status; do
+    while ! "$GIT_ROOT/b-bins/many" message --server http://localhost:8003 status; do
       sleep 1
     done >/dev/null
 EOT
@@ -45,6 +45,7 @@ function teardown() {
     local height
     local tx_id
     local tx_count
+    local tmp
 
     # Add a 1s network delay to node 3 containers
     docker exec -u root e2e-ledger-tendermint-3-1 tc qdisc add dev eth0 root netem delay 1s
@@ -59,11 +60,16 @@ function teardown() {
     assert_output --partial "0: 1"
 
     # Get current blockchain height
-    height=$(many_a "$(pem 1)" 8001 blockchain.info '{}' | grep -Po '1: \d+' | cut -d " " -f 2)
+    many_a "$(pem 1)" 8001 blockchain.info '{}'
+    tmp=$(echo "$output" | grep -Po '1: [0-9]+')
+    height=$(echo "$tmp" | cut -d " " -f 2)
     echo "# Height: $height"
 
     # Get the transaction id
-    tx_id=$(many_a "$(pem 1)" 8001 blockchain.block '{0: {1: '"$height"'}}' | awk '/5: \[/,/\],/' | grep -Po "0: h'(.*)'," | sed -E "s/0: h'(.*)',/\1/")
+    many_a "$(pem 1)" 8001 blockchain.block '{0: {1: '"$height"'}}'
+    tmp=$(echo "$output" | awk '/5: \[/,/\],/')
+    tmp=$(echo "$tmp" | grep -Po "0: h'(.*)',")
+    tx_id=$(echo "$tmp" | sed -E "s/0: h'(.*)',/\1/")
     echo "# Tx id: $tx_id"
 
     # Cycle the nodes
@@ -76,7 +82,9 @@ function teardown() {
 
     # Check for duplicate transactions
     sleep 30
-    tx_count=$(many_a "$(pem 1)" 8001 blockchain.list '{}' | grep -o $tx_id | wc -l)
+    many_a "$(pem 1)" 8001 blockchain.list '{}'
+    tmp=$(echo "$output" | grep -o "$tx_id")
+    tx_count=$(echo "$tmp" | wc -l)
     echo "# Tx count: $tx_count"
     assert_equal "$tx_count" "1"
 }

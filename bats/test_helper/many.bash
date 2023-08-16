@@ -57,7 +57,7 @@ function many_b() {
     call_many "$pem" "$port" "b-bins" "$@"
 }
 
-function wait_for_block() {
+function wait_for_block_a() {
     local block
     local port
     local current
@@ -65,10 +65,10 @@ function wait_for_block() {
     port=$2
     # Using [0-9] instead of \d for grep 3.8
     # https://salsa.debian.org/debian/grep/-/blob/debian/master/NEWS
-    current=$(many message --server http://localhost:${port}/ blockchain.info | grep -oE '1: [0-9]+' | colrm 1 3)
+    current=$("$GIT_ROOT/a-bins/many" message --server http://localhost:${port}/ blockchain.info | grep -oE '1: [0-9]+' | colrm 1 3)
     while [ "$current" -lt "$block" ]; do
       sleep 1
-      current=$(many message --server http://localhost:${port}/ blockchain.info | grep -oE '1: [0-9]+' | colrm 1 3)
+      current=$("$GIT_ROOT/a-bins/many" message --server http://localhost:${port}/ blockchain.info | grep -oE '1: [0-9]+' | colrm 1 3)
     done >/dev/null
 }
 
