@@ -21,7 +21,7 @@ workflows:
                 name: Remove old BATS
                 command: sudo rm -rf $(which bats)
           formatter: tap
-          report-formatter: junit
+          report_formatter: junit
           path: ./bats/tests
           timing: true
           exec_environment: linux2204_machine
