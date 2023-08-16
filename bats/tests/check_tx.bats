@@ -59,7 +59,7 @@ function teardown() {
     assert_output --partial "0: 1"
 
     # Get current blockchain height
-    height=$(many_a "$(pem 1)" 8001 blockchain.info '{}' | grep -Po '1: \d+' | cut -d " " -f 2)
+    height=$(many_a "$(pem 1)" 8001 blockchain.info '{}' | grep -Po '1: [0-9]+' | cut -d " " -f 2)
     echo "# Height: $height"
 
     # Get the transaction id
