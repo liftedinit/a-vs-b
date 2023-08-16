@@ -20,8 +20,7 @@ workflows:
             - run:
                 name: Remove old BATS
                 command: sudo rm -rf $(which bats)
-            - checkout
-            - run: git lfs pull
+            - run: sudo apt-get -y update && sudo apt-get -y install git-lfs
           formatter: tap
           report_formatter: junit
           path: ./bats/tests
